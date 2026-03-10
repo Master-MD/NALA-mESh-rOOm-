@@ -189,32 +189,61 @@ class MeshroomRun:
         return {"required": {
             "photos_dir": ("STRING", {"default": ""}),
             "output_dir": ("STRING", {"default": ""}),
+            "engine_mode": (["Apple Native (Metal)", "Local Meshroom", "Remote Meshroom (SSH)"],),
+            "ssh_host": ("STRING", {"default": "user@192.168.1.x"}),
+            "ssh_path": ("STRING", {"default": "/path/to/meshroom_batch"}),
             "pre_upscale": ("INT", {"default": 0, "min":0, "max":4}),
-            "open_app": ("BOOLEAN", {"default": True}),
-            "headless_mode": ("BOOLEAN", {"default": False}),
+            "open_app": ("BOOLEAN", {"default": False}),
+            "headless_mode": ("BOOLEAN", {"default": True}),
         }}
     RETURN_TYPES = ("STRING",)
     FUNCTION = "run"
     CATEGORY = "Meshroom"
-    def run(self, photos_dir, output_dir, pre_upscale, open_app, headless_mode):
+    def run(self, photos_dir, output_dir, engine_mode, ssh_host, ssh_path, pre_upscale, open_app, headless_mode):
         app = Path(os.path.expanduser("~/Applications")) / "Meshroom PRO KI.app"
         res = app / "Contents/Resources"
+        
+        # 1. Pre-Upscale (Logic remains the same)
         realesr = app / "Contents/MacOS" / "realesrgan-upscale"
         if pre_upscale and realesr.exists():
             out_pre = Path(output_dir)/"upscaled"; out_pre.mkdir(parents=True, exist_ok=True)
             subprocess.check_call([str(realesr), "-i", photos_dir, "-o", str(out_pre), "-s", str(pre_upscale), "-n", "realesrgan-x4plus"])
             photos_dir=str(out_pre)
         
-        if headless_mode and app.exists():
-            batch = app / "Contents/MacOS/meshroom_batch"
-            if batch.exists():
-                subprocess.Popen([str(batch), "--input", photos_dir, "--output", output_dir])
-                return (f"Background Headless Mode started.\\nPhotos: {photos_dir}\\nOutput: {output_dir}",)
+        # Ensure output directory exists
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+            
+        # 2. Engine Routing
+        status_msg = ""
+        if engine_mode == "Apple Native (Metal)":
+            native_bin = Path(os.path.expanduser("~/ComfyMeshroom/tools/meshroom_mac_native"))
+            if native_bin.exists():
+                out_usdz = str(Path(output_dir) / "model_native.usdz")
+                status_msg = f"Started Apple Native Metal processing.\\nOutput: {out_usdz}"
+                subprocess.Popen([str(native_bin), photos_dir, out_usdz])
             else:
-                return ("Error: meshroom_batch not found for headless mode",)
-        elif open_app and app.exists():
-            subprocess.Popen(["open", str(app)])
-        return (f"Use photos from: {photos_dir}\\nOutput to: {output_dir}",)
+                status_msg = "Error: Native Apple bin not found."
+                
+        elif engine_mode == "Remote Meshroom (SSH)":
+            # Just echoes the command for the user to see, or attempts execution if keys are set up
+            remote_cmd = f"ssh {ssh_host} '{ssh_path} --input {photos_dir} --output {output_dir}'"
+            status_msg = f"Remote SSH Triggered:\\n{remote_cmd}"
+            subprocess.Popen(["bash", "-c", remote_cmd])
+            
+        else:
+            # Local Meshroom (AliceVision)
+            if headless_mode and app.exists():
+                batch = app / "Contents/MacOS/meshroom_batch"
+                if batch.exists():
+                    subprocess.Popen([str(batch), "--input", photos_dir, "--output", output_dir])
+                    status_msg = f"Local Meshroom Headless Mode started.\\nPhotos: {photos_dir}\\nOutput: {output_dir}"
+                else:
+                    status_msg = "Error: meshroom_batch not found."
+            elif open_app and app.exists():
+                subprocess.Popen(["open", str(app)])
+                status_msg = f"Opened Local Meshroom GUI.\\nOutput intended for: {output_dir}"
+
+        return (status_msg,)
 NODE_CLASS_MAPPINGS={"MeshroomRun":MeshroomRun}
 PY
   cat > "$src/comfy_meshroom_pro/floorplan_scale.py" <<'PY'
@@ -285,6 +314,18 @@ echo "Python: \$(python -V)"; echo "Comfy: $TARGET"
 echo "Nodes:"; ls -l "$TARGET/custom_nodes" | sed 's/^/  /'
 BASH
 chmod +x "$TOOLS/diagnose.sh"
+
+# ----------------- Compile Swift Native ---
+compile_swift_native(){
+  local swift_src="$BASE/src_native/meshroom_mac_native.swift"
+  local dest_bin="$TOOLS/meshroom_mac_native"
+  if [[ -f "$swift_src" ]]; then
+      act "Compiling Apple Native Photogrammetry CLI (Swift)..."
+      swiftc "$swift_src" -o "$dest_bin" || warn "Swift compilation failed."
+      ok "Swift CLI ready: $dest_bin"
+  fi
+}
+compile_swift_native
 
 # ----------------- Finish -----------------
 ok "Installation/Update abgeschlossen."
