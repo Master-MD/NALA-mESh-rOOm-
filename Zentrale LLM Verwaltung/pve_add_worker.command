@@ -1,7 +1,7 @@
 cat > pve_add_worker.command <<'EOF'
 #!/bin/zsh
 set -euo pipefail
-HOST="${1:-192.168.1.69}"
+HOST="${1:-remote-ip-address}"
 USER="${2:-root}"
 PORT="${3:-8288}"
 read -r -d '' REMOTE <<"EOS"

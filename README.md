@@ -15,7 +15,7 @@ This project strictly adheres to the **NALA Ecosystem Universal Onboarding Proto
 2. 🔄 **ComfyUI Bridge Nodes:** The custom `MeshroomRun` ComfyUI Node routes to three engines:
    - **Apple Native Engine:** Runs the pure Swift CLI (`meshroom_mac_native`).
    - **Local Meshroom:** CPU Fallback via AliceVision.
-   - **Remote Meshroom (SSH Worker):** Discovers and uses your heavy Dell T5810 Workstation / NVIDIA Nodes.
+   - **Remote Meshroom (SSH Worker):** Discovers and uses your high-performance Remote Nodes / NVIDIA Workers.
 3. 💡 **NALA Workflow Ideas DB:** A beautiful HTML dashboard (`nala_workflow_db.html`) acting as an intelligent prompt database for automatic ComfyUI workflow generation (Insta360 Video integration, Gaussian Splatting, etc.).
 
 ![Architecture](/Users/ultramacuser/.gemini/antigravity/brain/6036eefd-15f2-4490-afad-7102be196453/nala_meshroom_hybrid_architecture_1773148742262.png)
@@ -47,7 +47,7 @@ Dieses Projekt folgt streng dem **NALA Ecosystem Universal Onboarding Protocol**
 2. 🔄 **ComfyUI Bridge Nodes:** Der Custom `MeshroomRun` Node steuert eine von drei Engines an:
    - **Apple Native Engine:** Nutzt Apples riesige native Leistung (M4 Max) ohne Meshroom-Overhead.
    - **Local Meshroom:** Startet klassisches AliceVision Meshroom ("Headless").
-   - **Remote Meshroom (NVIDIA Worker):** Nutzt fette NVIDIA GPUs (Bsp. Dell T5810) im lokalen Netz via SSH.
+   - **Remote Meshroom (NVIDIA Worker):** Nutzt leistungsstarke Remote-GPUs im lokalen Netz via SSH.
 3. 💡 **NALA Workflow Ideas DB:** Ein schickes HTML-Dashboard (`nala_workflow_db.html`), mit dem sich fertige ComfyUI Workflows für komplexe Aufgaben (Insta360, Gaussian Splatting) direkt auf den Mac herunterladen lassen.
 
 ## Installation

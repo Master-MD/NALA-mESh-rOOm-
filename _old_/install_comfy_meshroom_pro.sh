@@ -228,7 +228,7 @@ chmod +x "${TOOLS_DIR}/start_comfy_server.sh"
 
 # Remote worker quickstart text
 cat > "${TOOLS_DIR}/remote_worker_README.txt" <<TXT
-Remote worker (Linux/Windows/Dell):
+# 3) Remote worker (Linux/Windows/Remote Node):
 1) Install Python 3.10+ and git
 2) git clone https://github.com/comfyanonymous/ComfyUI
 3) python -m venv venv && source venv/bin/activate

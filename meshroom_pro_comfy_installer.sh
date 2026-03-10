@@ -190,7 +190,7 @@ class MeshroomRun:
             "photos_dir": ("STRING", {"default": ""}),
             "output_dir": ("STRING", {"default": ""}),
             "engine_mode": (["Apple Native (Metal)", "Local Meshroom", "Remote Meshroom (SSH)"],),
-            "ssh_host": ("STRING", {"default": "user@192.168.1.x"}),
+            "ssh_host": ("STRING", {"default": "user@remote-ip"}),
             "ssh_path": ("STRING", {"default": "/path/to/meshroom_batch"}),
             "pre_upscale": ("INT", {"default": 0, "min":0, "max":4}),
             "open_app": ("BOOLEAN", {"default": False}),
