@@ -1,0 +1,18 @@
+# 1) Patch-Installer holen & ausführbar machen
+chmod +x ~/Downloads/install_meshroom_pro_mac_patch2.sh 2>/dev/null || true
+cp -f sandbox:/mnt/data/install_meshroom_pro_mac_patch2.sh ~/Downloads/ 2>/dev/null || true
+chmod +x ~/Downloads/install_meshroom_pro_mac_patch2.sh
+
+# 2) Sicherstellen, dass Boost & nanoflann installiert sind
+brew install boost nanoflann
+
+# 3) Installer starten (baut AliceVision mit Legacy-CMake)
+~/Downloads/install_meshroom_pro_mac_patch2.sh
+
+# Optional: mit Upscalern & experimentellem OpenCL
+# ~/Downloads/install_meshroom_pro_mac_patch2.sh --ai-extras --experimental-opencl
+
+# 4) Starten
+open ~/meshroom-local/Meshroom.app
+# oder
+~/meshroom-local/bin/meshroom

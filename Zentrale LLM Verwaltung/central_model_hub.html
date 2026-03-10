@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Central Model Hub – Control Panel (El Nala Dark)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#0e1116;
+    --panel:#141a22;
+    --muted:#9fb0c3;
+    --accent:#6dd3fb;
+    --accent-2:#bb86fc;
+    --ok:#00d1a7;
+    --warn:#ffb000;
+    --err:#ff5d6c;
+    --border:#263140;
+    --text:#e6eef7;
+    --code-bg:#0b0f14;
+  }
+  *{box-sizing:border-box}
+  body{margin:24px;background:var(--bg);color:var(--text);font:14px/1.45 ui-sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial}
+  h1{font-size:20px;margin:0 0 10px;color:var(--accent)}
+  fieldset{margin:14px 0;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--panel)}
+  legend{padding:0 8px;font-weight:700;color:var(--accent-2)}
+  label{display:block;margin:8px 0 6px}
+  input[type=text]{width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:#0b0f14;color:var(--text)}
+  button{padding:10px 14px;border:1px solid var(--border);border-radius:12px;background:#0f1620;color:var(--text);cursor:pointer}
+  button:hover{box-shadow:0 0 0 2px inset var(--accent);transition:.12s}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .hint{color:var(--muted);font-size:12px}
+  code,.small{font-family:ui-monospace,Menlo,Consolas,monospace}
+  .small{font-size:12px;white-space:pre-wrap;background:var(--code-bg);border:1px solid var(--border);padding:10px;border-radius:8px;color:#cfe6ff}
+  .pill{display:inline-block;padding:4px 10px;border:1px solid var(--border);border-radius:999px;background:#0f1620;margin-right:6px;color:var(--muted)}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+  .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:10px}
+  .kpi>div{background:#0f1620;padding:12px;border:1px solid var(--border);border-radius:12px}
+  .kpi h3{margin:0 0 4px;font-size:13px;color:var(--muted);font-weight:600}
+  .kpi p{margin:0;font:600 18px ui-sans-serif}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:20px}
+  .modal{max-width:960px;width:100%;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px}
+  .modal h2{margin:0 0 8px;color:var(--accent)}
+  .right{float:right}
+</style>
+</head>
+<body>
+
+<h1>Central Model Hub – Control Panel</h1>
+<p class="hint">
+Lege diese HTML-Datei <b>in denselben Ordner</b> wie <code>setup_central_models.sh</code>. Die erzeugten
+<code>.command</code>-Dateien finden das Script automatisch relativ zu diesem Ordner (<code>$DIR/setup_central_models.sh</code>).
+</p>
+
+<fieldset>
+  <legend>🔧 Pfad-Konfiguration</legend>
+  <label><input type="checkbox" id="sameFolder" checked> Script liegt im <b>gleichen Ordner</b> wie diese HTML (empfohlen)</label>
+  <div id="manualPathWrap" style="display:none;margin-top:8px;">
+    <label for="scriptPath">Voller Pfad zu <code>setup_central_models.sh</code> (nur wenn nicht im selben Ordner)</label>
+    <input type="text" id="scriptPath" placeholder="/Users/DEINNAME/.../setup_central_models.sh">
+    <div class="hint">Tipp: Im Finder <b>Alt+Cmd+C</b> auf die Datei → Pfad kopieren & hier einfügen.</div>
+  </div>
+  <div style="margin-top:8px">
+    <span class="pill">Modus: <span id="modeLabel">Gleiches Verzeichnis</span></span>
+  </div>
+</fieldset>
+
+<fieldset>
+  <legend>▶ Aktionen (.command erzeugen)</legend>
+  <div class="row">
+    <button onclick="makeCmd('setup')">0) Einmalig einsammeln &amp; verlinken</button>
+    <button onclick="makeCmd('fullscan')">0b) Setup + Vollscan (ganzer Home, verbose)</button>
+  </div>
+  <div class="row">
+    <button onclick="makeCmd('readonly')">3) Zentralordner read-only</button>
+    <button onclick="makeCmd('writable')">4) Schreibschutz entfernen</button>
+  </div>
+  <div class="row">
+    <button onclick="makeCmd('workcopy')">2) Trainings-Workcopy (APFS Clone)</button>
+  </div>
+  <p class="hint">Die Buttons erzeugen eine <code>.command</code>-Datei zum Download. Doppelklick im Finder → startet im Terminal.</p>
+</fieldset>
+
+<fieldset>
+  <legend>🧪 Testlauf & Dashboard</legend>
+  <div class="row">
+    <button onclick="makeCmd('testrun')">Testlauf (.command) erzeugen</button>
+    <button onclick="loadSummary()">Zusammenfassung laden (JSON)</button>
+  </div>
+  <div class="hint" style="margin-top:8px">
+    Der Testlauf erzeugt <code>~/AI_Models/summary-latest.json</code> (Dry-Run + Größenanalyse inkl. “Platz gespart”).<br>
+    Danach hier klicken: <b>Zusammenfassung laden</b> → Datei auswählen → Dashboard erscheint.
+  </div>
+</fieldset>
+
+<fieldset>
+  <legend>🕒 Automatischer Scan (launchd)</legend>
+  <div class="row">
+    <button onclick="makePlist('6')">Alle 6h</button>
+    <button onclick="makePlist('12')">Alle 12h</button>
+    <button onclick="makePlist('24')">Alle 24h</button>
+  </div>
+  <div class="small" style="margin-top:8px">
+Installieren:
+1) Lade die <code>.plist</code> herunter
+2) kopiere nach <code>~/Library/LaunchAgents/</code>
+3) <code>launchctl load ~/Library/LaunchAgents/com.central-model-hub.scan.plist</code>
+
+Deinstallieren:
+<code>launchctl unload ~/Library/LaunchAgents/com.central-model-hub.scan.plist</code>
+  </div>
+</fieldset>
+
+<fieldset>
+  <legend>ℹ️ Kurz-README</legend>
+  <div class="small">
+- Sammelt KI/LLM/Comfy/JAN-Modelle in <code>~/AI_Models</code><br>
+- Erstellt Symlinks zurück in die App-Ordner (JAN, ComfyUI, LLMStudio, …)<br>
+- Duplikate zusammenführen, in Benutzung überspringen, Manifest/Logs schreiben<br>
+- Empfohlen: read-only für Inference, Workcopy für Trainingsläufe<br>
+  </div>
+</fieldset>
+
+<fieldset>
+  <legend>📘 Erweiterte Softwarebeschreibung</legend>
+  <button onclick="toggleReadme()" style="margin-bottom:10px;">▶ Anzeigen / Verstecken</button>
+  <div id="extendedReadme" style="display:none;">
+<pre class="small">
+# Central Model Hub – Extended README
+
+## Was macht das Tool?
+- Sammelt automatisch alle KI-/LLM-/ComfyUI-/JAN-Modelle, die auf deinem Mac verteilt sind.
+- Verschiebt sie in einen zentralen Ordner: ~/AI_Models
+- Erstellt Symlinks zurück in die Original-Apps (JAN, ComfyUI, LLMStudio, Meshroom …)
+- Erkennt Duplikate, führt sie zusammen und überspringt Dateien in aktiver Nutzung.
+- Schreibt Manifest (.manifest.jsonl) und Log (.last_run.log).
+
+## Warum?
+- Speicher sparen (ein Modell = eine Kopie, überall verlinkt).
+- Zeit sparen (kein doppeltes Herunterladen).
+- Ordnung halten (ein Hauptordner).
+- Sichere Trennung von Inference (read-only) und Training (Workcopy).
+
+## Bedienung (Kurz)
+- HTML lokal öffnen → Buttons erzeugen passende .command-Dateien.
+- Doppelklick auf .command → Terminal führt die Aktion aus.
+- Optional: launchd-Job generieren (6/12/24h).
+
+## Beispiele CLI
+- Schnell einsammeln:  ./setup_central_models.sh --setup
+- Vollscan & verbose:  ./setup_central_models.sh --setup --full-scan --verbose
+- Workcopy anlegen:    ./setup_central_models.sh --make-workcopy "qwen2.5-7b.gguf" ~/TrainRuns/run1
+- Read-only setzen:    ./setup_central_models.sh --readonly
+- Wieder schreibbar:   ./setup_central_models.sh --writable
+
+## Hinweise
+- Chats/Konversationen liegen in den App-Datenbanken, NICHT in den Modelldateien.
+- Gleichzeitiger Lesezugriff (JAN & ComfyUI) ist unkritisch; Schreiben/Training niemals am Original.
+- Für Training immer eine Workcopy/Clone nutzen.
+
+## Logs
+- Zusammenfassung & Details: ~/AI_Models/.last_run.log
+</pre>
+  </div>
+</fieldset>
+
+<!-- Dashboard Overlay -->
+<div class="overlay" id="dash">
+  <div class="modal">
+    <button class="right" onclick="closeDash()">✕</button>
+    <h2>Zusammenfassung</h2>
+    <div class="kpi">
+      <div><h3>Gefunden</h3><p id="k_found">–</p></div>
+      <div><h3>Einzigartig</h3><p id="k_unique">–</p></div>
+      <div><h3>Duplikate</h3><p id="k_dupes">–</p></div>
+      <div><h3>Symlinks aktualisiert</h3><p id="k_links">–</p></div>
+      <div><h3>Überspr. (in Benutzung)</h3><p id="k_busy">–</p></div>
+      <div><h3>Platz gespart</h3><p id="k_saved" class="ok">–</p></div>
+    </div>
+    <div class="small" style="margin-top:12px" id="k_detail">–</div>
+  </div>
+</div>
+
+<script>
+  // ===== UI state
+  const sameFolderEl = document.getElementById('sameFolder');
+  const manualWrap = document.getElementById('manualPathWrap');
+  const modeLabel = document.getElementById('modeLabel');
+  sameFolderEl.addEventListener('change', () => {
+    manualWrap.style.display = sameFolderEl.checked ? 'none' : 'block';
+    modeLabel.textContent = sameFolderEl.checked ? 'Gleiches Verzeichnis' : 'Manueller Pfad';
+  });
+
+  function toggleReadme(){
+    const el = document.getElementById('extendedReadme');
+    el.style.display = (el.style.display==='none') ? 'block' : 'none';
+  }
+
+  // ===== Helpers to build scripts
+  function currentDirSnippet() {
+    return 'DIR="$(cd -- "$(dirname -- "$0")" && pwd)"\\n';
+  }
+  function scriptLine() {
+    const defaultRel = '"$DIR/setup_central_models.sh"';
+    if (sameFolderEl.checked) return 'SCRIPT=' + defaultRel + '\\n';
+    const manual = document.getElementById('scriptPath')?.value.trim() || '';
+    if (!manual) {
+      alert('Bitte absoluten Pfad zu setup_central_models.sh angeben oder “gleiches Ordner”-Option verwenden.');
+      throw new Error('no path');
+    }
+    return 'SCRIPT="' + manual.replace(/"/g,'\\\\"') + '"\\n';
+  }
+  function shebangHeader() {
+    return '#!/bin/zsh\\nset -euo pipefail\\n' + currentDirSnippet() + scriptLine() +
+           'if [[ ! -x "$SCRIPT" ]]; then\\n' +
+           '  echo "Fehler: $SCRIPT nicht gefunden oder nicht ausführbar."\\n' +
+           '  echo "Lege die HTML + setup_central_models.sh in denselben Ordner ODER gib den absoluten Pfad an."\\n' +
+           '  exit 1\\n' +
+           'fi\\n';
+  }
+  function downloadText(text, filename){
+    const blob = new Blob([text], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ===== Buttons (.command generators)
+  function makeCmd(kind){
+    let body = shebangHeader();
+    if (kind==='setup') {
+      body += '"$SCRIPT" --setup\\n';
+      downloadText(body, 'central-setup.command');
+    } else if (kind==='fullscan') {
+      body += '"$SCRIPT" --setup --full-scan --verbose\\n';
+      downloadText(body, 'central-setup-fullscan.command');
+    } else if (kind==='readonly') {
+      body += '"$SCRIPT" --readonly\\n';
+      downloadText(body, 'central-readonly.command');
+    } else if (kind==='writable') {
+      body += '"$SCRIPT" --writable\\n';
+      downloadText(body, 'central-writable.command');
+    } else if (kind==='workcopy') {
+      const model = prompt('Dateiname des Modells (z. B. qwen2.5-7b.gguf):','');
+      if (!model) return;
+      const out = prompt('Zielordner für Workcopy (z. B. ~/TrainRuns/qwen2.5-7b-run1):','');
+      if (!out) return;
+      body += '"$SCRIPT" --make-workcopy "'+ model.replace(/"/g,'\\"') +'" "'+ out.replace(/"/g,'\\"') + '"\\n';
+      downloadText(body, `central-workcopy-${model.replace(/[^a-z0-9._-]+/gi,'_')}.command`);
+    } else if (kind==='testrun') {
+      // Generates a Dry-Run + Size Analysis command that writes summary JSON we can load in the UI.
+      body += `CENTRAL="$HOME/AI_Models"\\n`;
+      body += `OUT="$CENTRAL/summary-latest.json"\\n`;
+      body += `mkdir -p "$CENTRAL"\\n`;
+      // 1) Run dry-run (no moving), but verbose, full scan optional is not assumed here to keep time bounded.
+      body += `"${'$'}SCRIPT" --setup --dry-run --verbose || true\\n`;
+      // 2) Size analysis: hash all model-like files in known roots (w/o following symlinks)
+      body += `roots=(\\n`;
+      body += `  "$HOME/Library/Application Support/JAN/data/llamacpp/models"\\n`;
+      body += `  "$HOME/ComfyMeshroom/ComfyUI/models"\\n`;
+      body += `  "$HOME/LLMStudio/models"\\n`;
+      body += `  "$CENTRAL"\\n`;
+      body += `)\\n`;
+      body += `types=(-name "*.gguf" -o -name "*.safetensors" -o -name "*.ckpt" -o -name "*.pt" -o -name "*.pth" -o -name "*.onnx" -o -name "*.bin" -o -name "*.ggml" -o -name "*.mpt" -o -name "*.tflite")\\n`;
+      body += `tmp="$(mktemp)"\\n`;
+      body += `total_bytes=0; unique_bytes=0; found=0; links_updated=0; busy=0\\n`;
+      body += `# Pull numbers from last_run.log if present\\n`;
+      body += `[[ -f "$CENTRAL/.last_run.log" ]] && links_updated=$(grep -E "Symlinks aktualisiert:" "$CENTRAL/.last_run.log" | tail -1 | awk '{print $3}' || echo 0)\\n`;
+      body += `# Collect files\\n`;
+      body += `for r in "${'$'}{roots[@]}"; do [[ -d "$r" ]] || continue;\\n`;
+      body += `  find "$r" -type f \$begin:math:text$ "${'$'}{types[@]}" \\$end:math:text$ -prune -print >> "$tmp" 2>/dev/null || true;\\n`;
+      body += `done\\n`;
+      body += `found=$(wc -l < "$tmp" | tr -d ' ')\\n`;
+      body += `# Hash and size\\n`;
+      body += `# format: sha256 size path\\n`;
+      body += `mapfile -t lines < <(while IFS= read -r p; do \\n`;
+      body += `  sz=$(stat -f %z "$p" 2>/dev/null || echo 0); \\n`;
+      body += `  printf "%s\\n" "$p"; \\n`;
+      body += `done < "$tmp")\\n`;
+      body += `# compute hashes (shasum handles big files but can be slow; acceptable for test)\\n`;
+      body += `declare -A seen\\n`;
+      body += `while IFS= read -r p; do \\n`;
+      body += `  [[ -f "$p" ]] || continue; \\n`;
+      body += `  sz=$(stat -f %z "$p" 2>/dev/null || echo 0); total_bytes=$((total_bytes+sz)); \\n`;
+      body += `  h=$(shasum -a 256 "$p" 2>/dev/null | awk '{print $1}'); \\n`;
+      body += `  if [[ -z "${'$'}{seen[$h]+x}" ]]; then seen[$h]=$sz; unique_bytes=$((unique_bytes+sz)); fi; \\n`;
+      body += `done < "$tmp"\\n`;
+      body += `dupes_bytes=$((total_bytes-unique_bytes))\\n`;
+      body += `dupes_count=0; # rough: found unique count via number of keys\\n`;
+      body += `unique_count=$(( ${'$'}{#seen[@]} ))\\n`;
+      body += `dupes_count=$((found-unique_count))\\n`;
+      body += `# Compose JSON summary\\n`;
+      body += `cat > "$OUT" <<JSON\\n`;
+      body += `{\\n`;
+      body += `  "found": ${'$'}found,\\n`;
+      body += `  "unique": ${'$'}unique_count,\\n`;
+      body += `  "dupes": ${'$'}dupes_count,\\n`;
+      body += `  "symlinks_updated": ${'$'}links_updated,\\n`;
+      body += `  "skipped_busy": ${'$'}busy,\\n`;
+      body += `  "total_bytes": ${'$'}total_bytes,\\n`;
+      body += `  "unique_bytes": ${'$'}unique_bytes,\\n`;
+      body += `  "saved_bytes": ${'$'}dupes_bytes,\\n`;
+      body += `  "summary_path": "$OUT"\\n`;
+      body += `}\\n`;
+      body += `JSON\\n`;
+      body += `echo "✅ Summary geschrieben: $OUT"\\n`;
+      downloadText(body, 'central-test-run.command');
+    }
+  }
+
+  function makePlist(hoursStr){
+    const hours = parseInt(hoursStr,10);
+    const label = 'com.central-model-hub.scan';
+    const cmdName = 'central-setup.command';
+    const plist = `<?xml version="1.0" encoding="UTF-8"?>\\n` +
+`<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\\n` +
+`<plist version="1.0">\\n<dict>\\n` +
+`  <key>Label</key><string>${label}</string>\\n` +
+`  <key>ProgramArguments</key>\\n  <array>\\n    <string>/bin/zsh</string>\\n    <string>-lc</string>\\n` +
+`    <string>DIR="$(cd -- &quot;$(dirname -- &quot;$0&quot;)&quot; &amp;&amp; pwd)"; \\\\n` +
+`[[ -x "$DIR/${cmdName}" ]] || echo "Bitte ${cmdName} neben die .plist legen"; \\\\n` +
+`exec "$DIR/${cmdName}"</string>\\n  </array>\\n` +
+`  <key>StartInterval</key><integer>${hours*3600}</integer>\\n` +
+`  <key>StandardOutPath</key><string>$HOME/AI_Models/launchd.out.log</string>\\n` +
+`  <key>StandardErrorPath</key><string>$HOME/AI_Models/launchd.err.log</string>\\n` +
+`  <key>RunAtLoad</key><true/>\\n` +
+`</dict>\\n</plist>\\n`;
+    downloadText(plist, 'com.central-model-hub.scan.plist');
+    alert('Plist heruntergeladen. Lege zusätzlich die erzeugte central-setup.command neben die .plist in ~/Library/LaunchAgents und lade sie mit launchctl.');
+  }
+
+  // ===== Dashboard loader
+  function loadSummary(){
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'application/json';
+    inp.onchange = async (e)=>{
+      const f = e.target.files[0];
+      if (!f) return;
+      const txt = await f.text();
+      try{
+        const j = JSON.parse(txt);
+        showDash(j);
+      }catch(err){
+        alert('Konnte JSON nicht lesen: ' + err.message);
+      }
+    };
+    inp.click();
+  }
+  function humanBytes(b){
+    const u=['B','KB','MB','GB','TB','PB']; let i=0; let n=Number(b)||0;
+    while(n>=1024 && i<u.length-1){n/=1024;i++;}
+    return n.toFixed(n<10?2:1)+' '+u[i];
+  }
+  function showDash(j){
+    document.getElementById('k_found').textContent = j.found ?? '–';
+    document.getElementById('k_unique').textContent = j.unique ?? '–';
+    document.getElementById('k_dupes').textContent = j.dupes ?? '–';
+    document.getElementById('k_links').textContent = j.symlinks_updated ?? '–';
+    document.getElementById('k_busy').textContent = j.skipped_busy ?? '0';
+    document.getElementById('k_saved').textContent = j.saved_bytes!=null ? humanBytes(j.saved_bytes) : '–';
+    const detail = [
+      `Total: ${humanBytes(j.total_bytes||0)}`,
+      `Unique: ${humanBytes(j.unique_bytes||0)}`,
+      `Gespart: ${humanBytes(j.saved_bytes||0)}`,
+      j.summary_path ? `Datei: ${j.summary_path}` : ''
+    ].filter(Boolean).join('\\n');
+    document.getElementById('k_detail').textContent = detail;
+    document.getElementById('dash').style.display='flex';
+  }
+  function closeDash(){ document.getElementById('dash').style.display='none' }
+</script>
+
+</body>
+</html>

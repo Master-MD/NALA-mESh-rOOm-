@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>El-Nala Tool Panel (lokal)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  --bg:#0c0f14; --panel:#121622; --muted:#8aa0b5; --txt:#e7eff7;
+  --hot:#ff2d84; --cyan:#19d3ff; --ok:#45f0a0; --warn:#ffd166;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,rgba(25,211,255,.08),transparent 60%),radial-gradient(1200px 600px at 110% 110%,rgba(255,45,132,.08),transparent 60%),var(--bg);color:var(--txt);font:15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans}
+header{padding:24px 28px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:16px}
+.logo{width:42px;height:42px;border-radius:12px;background:
+radial-gradient(circle at 20% 30%, rgba(25,211,255,.45), transparent 40%),
+radial-gradient(circle at 80% 70%, rgba(255,45,132,.45), transparent 40%), #0b0e13;
+box-shadow:0 0 40px rgba(25,211,255,.25), inset 0 0 30px rgba(255,45,132,.2)}
+h1{font-size:20px;margin:0}
+main{max-width:1100px;margin:0 auto;padding:22px;display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent),var(--panel);
+border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:18px}
+.card h2{margin:0 0 10px;font-size:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.btn{appearance:none;border:1px solid rgba(255,255,255,.12);background:#0c111b;color:var(--txt);
+padding:10px 14px;border-radius:10px;cursor:pointer}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.06) inset}
+.btn.primary{background:linear-gradient(90deg,#192f3a,#0f1a28);border-color:#1e3a4a}
+.badge{font:12px var(--mono);color:var(--muted)}
+code, pre{font-family:var(--mono);font-size:12px}
+.small{font-size:12px;color:var(--muted)}
+footer{max-width:1100px;margin:6px auto 28px;padding:0 22px;color:var(--muted);font-size:12px}
+hr{border:0;border-top:1px dashed rgba(255,255,255,.08);margin:10px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"></div>
+  <h1>El-Nala Tool Panel · lokal · 127.0.0.1</h1>
+</header>
+
+<main>
+  <section class="card">
+    <h2>ComfyUI · Backend & Doctor</h2>
+    <div class="row">
+      <button class="btn primary" onclick="downloadCommand('el_nala_doctor.command', doctorScript())">Doctor erzeugen</button>
+      <button class="btn" onclick="downloadCommand('start_comfy_backend.command', startScript())">Start (8188)</button>
+      <button class="btn" onclick="downloadCommand('stop_comfy_backend.command', stopScript())">Stop</button>
+    </div>
+    <p class="small">Erzeuge .command → im Finder doppelklicken. Keine Autostarts.</p>
+  </section>
+
+  <section class="card">
+    <h2>Ollama (Mini-LLM offline)</h2>
+    <div class="row">
+      <button class="btn" onclick="downloadCommand('ollama_install.command', ollamaInstall())">Installieren</button>
+      <button class="btn" onclick="downloadCommand('ollama_pull_small.command', ollamaPull())">Kleines Modell holen</button>
+      <button class="btn" onclick="downloadCommand('ollama_run.command', ollamaRun())">Start (127.0.0.1)</button>
+      <button class="btn" onclick="downloadCommand('ollama_stop.command', ollamaStop())">Stop</button>
+    </div>
+    <p class="small">Empfehlung: <code>llama3.2:3b</code> oder <code>qwen2.5:3b</code> – genügsam auf M-Chip.</p>
+  </section>
+
+  <section class="card">
+    <h2>RAG · Qdrant + n8n</h2>
+    <div class="row">
+      <button class="btn" onclick="downloadCommand('qdrant_start.command', qdrantStart())">Qdrant Start</button>
+      <button class="btn" onclick="downloadCommand('qdrant_stop.command', qdrantStop())">Qdrant Stop</button>
+      <button class="btn" onclick="downloadCommand('n8n_start.command', n8nStart())">n8n Start</button>
+      <button class="btn" onclick="downloadCommand('n8n_stop.command', n8nStop())">n8n Stop</button>
+    </div>
+    <p class="small">Beide laufen standardmäßig nur auf <code>127.0.0.1</code> (Docker erforderlich).</p>
+  </section>
+
+  <section class="card">
+    <h2>Model-Sync</h2>
+    <div class="row">
+      <button class="btn" onclick="downloadCommand('sync_models_to_gtr9pro.command', syncModels())">Sync → gtr9pro</button>
+    </div>
+    <p class="small">Bearbeite Host/Pfad im Skript. Nutzt <code>rsync</code> (dry-run einstellbar).</p>
+  </section>
+
+  <section class="card">
+    <h2>Kurz-README</h2>
+    <ul class="small">
+      <li>**Doctor** fixt Comfy Desktop-Remote, killt belegten Port, startet Backend (lokal).</li>
+      <li>**Start/Stop** starten nur den Backend-Server (ohne Desktop).</li>
+      <li>**Ollama** lädt & startet ein kleines Offline-LLM (kein Autostart).</li>
+      <li>**Qdrant/n8n** für lokale RAG & Automations – nur 127.0.0.1.</li>
+      <li>**Sync** spiegelt <code>~/AI_Models</code> auf deinen Server (editierbar).</li>
+    </ul>
+  </section>
+</main>
+
+<footer>© El-Nala – lokal, portabel, keine offenen Ports. Wenn du magst, binden wir später Jan.ai/LLMStudio Buttons an.</footer>
+
+<script>
+function dl(name, text){const blob=new Blob([text],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+function shebang(){return "#!/bin/zsh\nset -euo pipefail\n";}
+
+function doctorScript(){
+return shebang()+`PORT="\${1:-8188}"
+DESKTOP_DIR="$HOME/Library/Application Support/ComfyUI Desktop"
+TOOL_DIR="$HOME/ComfyMeshroom/tools"
+WRAPPER="/usr/local/bin/meshroom-pro"
+VENV_PY="$HOME/ComfyMeshroom/venv/bin/python"
+MAIN_PY="$HOME/ComfyMeshroom/ComfyUI/main.py"
+echo "=== El-Nala Comfy Doctor (Port \$PORT) ==="
+for f in "$WRAPPER" "$TOOL_DIR/start_comfy_server.sh"; do
+  [[ -f "$f" ]] && perl -i -pe 's/\\s*--enable-cors-all\\s*//g' "$f" || true
+done
+pids=$(lsof -nP -iTCP:\${PORT} -sTCP:LISTEN -t || true)
+[[ -n "\${pids:-}" ]] && kill -9 $pids || true
+mkdir -p "$DESKTOP_DIR"
+CONFIG="$DESKTOP_DIR/config.json"
+if command -v jq >/dev/null 2>&1 && [[ -f "$CONFIG" ]]; then
+  tmp="$CONFIG.tmp"; jq '.server.useRemote=true | .server.remoteUrl="http://127.0.0.1:'+"${PORT}"+'"' "$CONFIG" > "$tmp" 2>/dev/null || echo '{}' > "$tmp"; mv "$tmp" "$CONFIG"
+else
+  cat > "$CONFIG" <<JSON
+{"server":{"useRemote":true,"remoteUrl":"http://127.0.0.1:\${PORT}"}}
+JSON
+fi
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
+if [[ -x "$VENV_PY" && -f "$MAIN_PY" ]]; then
+  nohup "$VENV_PY" "$MAIN_PY" --listen 127.0.0.1 --port "\$PORT" >/tmp/comfy_backend.log 2>&1 & 
+  SPID=$!
+elif command -v meshroom-pro >/dev/null 2>&1; then
+  nohup meshroom-pro "\$PORT" >/tmp/comfy_backend.log 2>&1 & 
+  SPID=$!
+else
+  echo "[ERR] Kein Startpfad gefunden."; exit 1
+fi
+sleep 3; lsof -nP -iTCP:\${PORT} -sTCP:LISTEN >/dev/null 2>&1 && open "http://127.0.0.1:\${PORT}" || tail -n 50 /tmp/comfy_backend.log || true
+open -a "ComfyUI Desktop" 2>/dev/null || true
+echo "=== Done ===\n`
+}
+function startScript(){
+return shebang()+`PORT="\${1:-8188}"
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
+VENV_PY="$HOME/ComfyMeshroom/venv/bin/python"
+MAIN_PY="$HOME/ComfyMeshroom/ComfyUI/main.py"
+for f in "/usr/local/bin/meshroom-pro" "$HOME/ComfyMeshroom/tools/start_comfy_server.sh"; do
+  [[ -f "$f" ]] && perl -i -pe 's/\\s*--enable-cors-all\\s*//g' "$f" || true
+done
+if [[ -x "$VENV_PY" && -f "$MAIN_PY" ]]; then
+  exec "$VENV_PY" "$MAIN_PY" --listen 127.0.0.1 --port "\$PORT"
+elif command -v meshroom-pro >/dev/null 2>&1; then
+  exec meshroom-pro "\$PORT"
+else
+  echo "[ERR] Kein Startpfad gefunden."; exit 1
+fi\n`
+}
+function stopScript(){
+return shebang()+`PORT="\${1:-8188}"
+pids=$(lsof -nP -iTCP:\${PORT} -sTCP:LISTEN -t || true)
+[[ -n "\${pids:-}" ]] && (echo "Kill: \$pids"; kill -9 \$pids) || echo "Kein Prozess auf \${PORT}."\n`
+}
+function ollamaInstall(){
+return shebang()+`if ! command -v brew >/dev/null 2>&1; then echo "[ERR] Homebrew fehlt: https://brew.sh"; exit 1; fi
+brew list ollama >/dev/null 2>&1 || brew install ollama
+echo "[OK] ollama installiert."\n`
+}
+function ollamaPull(){
+return shebang()+`command -v ollama >/dev/null 2>&1 || { echo "[ERR] ollama fehlt"; exit 1; }
+ollama pull llama3.2:3b || true
+ollama pull qwen2.5:3b || true
+echo "[OK] Modelle vorhanden."\n`
+}
+function ollamaRun(){
+return shebang()+`command -v ollama >/dev/null 2>&1 || { echo "[ERR] ollama fehlt"; exit 1; }
+OLLAMA_HOST="127.0.0.1:11434" nohup ollama serve >/tmp/ollama.log 2>&1 &
+sleep 2; open "http://127.0.0.1:11434" 2>/dev/null || true
+echo "[OK] ollama läuft (127.0.0.1:11434) – nutze z.B. Jan.ai lokal."\n`
+}
+function ollamaStop(){
+return shebang()+`pids=$(pgrep -fal "ollama serve" | awk '{print $1}' || true)
+[[ -n "\${pids:-}" ]] && kill -9 $pids || echo "ollama lief nicht."\n`
+}
+function qdrantStart(){
+return shebang()+`if ! command -v docker >/dev/null 2>&1; then echo "[ERR] Docker Desktop fehlt."; exit 1; fi
+docker run -d --name qdrant --restart unless-stopped -p 127.0.0.1:6333:6333 -p 127.0.0.1:6334:6334 -v "$HOME/.qdrant:/qdrant/storage" qdrant/qdrant
+open "http://127.0.0.1:6333/dashboard" 2>/dev/null || true
+echo "[OK] Qdrant läuft auf 127.0.0.1:6333"\n`
+}
+function qdrantStop(){
+return shebang()+`docker rm -f qdrant 2>/dev/null || echo "Qdrant lief nicht."\n`
+}
+function n8nStart(){
+return shebang()+`if ! command -v docker >/dev/null 2>&1; then echo "[ERR] Docker Desktop fehlt."; exit 1; fi
+docker run -d --name n8n --restart unless-stopped -p 127.0.0.1:5678:5678 -v "$HOME/.n8n:/home/node/.n8n" n8nio/n8n
+open "http://127.0.0.1:5678" 2>/dev/null || true
+echo "[OK] n8n läuft auf 127.0.0.1:5678"\n`
+}
+function n8nStop(){
+return shebang()+`docker rm -f n8n 2>/dev/null || echo "n8n lief nicht."\n`
+}
+function syncModels(){
+return shebang()+`SRC="$HOME/AI_Models"
+DST_USER="ultra" ; DST_HOST="gtr9pro" ; DST_PATH="/srv/models/AI_Models"
+DRY="--dry-run"   # zum echten Sync DRY='' setzen
+rsync -avh --delete-after --size-only $DRY "$SRC/" "$DST_USER@$DST_HOST:$DST_PATH/"
+echo "[OK] Sync ausgeführt (evtl. dry-run)."\n`
+}
+function downloadCommand(name, text){dl(name, text + "\n");}
+</script>
+</body>
+</html>

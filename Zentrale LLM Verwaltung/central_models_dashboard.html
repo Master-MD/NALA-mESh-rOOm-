@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Zentrale LLM-Modelle – Dashboard</title>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#111720; --accent:#6ee7ff; --muted:#9fb3c8; --ok:#7cf29a; --warn:#f7c266; --err:#ff8e8e;
+    --border:#1c2430; --text:#e6eef7;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  header{padding:16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#0c131b,#0a0e14)}
+  h1{margin:0;font-size:18px;letter-spacing:.3px}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  .grid{display:grid;gap:16px}
+  @media(min-width:920px){.grid{grid-template-columns:1.2fr .8fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  button,a.btn{appearance:none;border:1px solid var(--border);background:#0f1620;color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer}
+  button:hover,a.btn:hover{border-color:#264257}
+  .btn-primary{background:#0c1f2a;border-color:#1f3c4f}
+  .btn-accent{background:linear-gradient(135deg,#0d2a36,#0a1a22);border-color:#164557;color:var(--accent)}
+  .btn-danger{background:#2a1313;border-color:#512424;color:#ffb3b3}
+  .muted{color:var(--muted)}
+  code{background:#0d141c;border:1px solid var(--border);padding:2px 6px;border-radius:6px}
+  canvas{width:100%;height:180px;border-radius:10px;background:#0c131c;border:1px solid var(--border)}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:#0d141b;color:var(--muted);font-size:12px;margin-left:6px}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+  footer{opacity:.8;padding:12px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <h1>🧭 Zentrale LLM-Modelle <span class="pill">El-Nala Mode</span></h1>
+</header>
+
+<main class="wrap grid">
+  <section class="card">
+    <h2>Aktionen</h2>
+    <div id="actions" class="row">
+      <!-- Buttons werden per JS je nach vorhandenen Dateien eingeblendet -->
+      <span class="muted">Prüfe Scripte…</span>
+    </div>
+    <div style="margin-top:10px" class="muted">
+      Tipp: Lege <code>central-test-run.command</code>, <code>central-cron.command</code> und <code>central-reset-history.command</code>
+      in denselben Ordner wie diese HTML. Beim Klick öffnet macOS Terminal und führt sie aus.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Letzte Zusammenfassung</h2>
+    <div id="summaryBox" class="muted">Suche <code>last_summary.json</code>…</div>
+  </section>
+
+  <section class="card" style="grid-column:1/-1">
+    <h2>Verlauf</h2>
+    <div class="row" style="margin-bottom:10px">
+      <button id="btnReload" class="btn-primary">Verlauf neu laden</button>
+      <a id="btnReset" class="btn btn-danger" href="central-reset-history.command">Verlauf zurücksetzen</a>
+      <span class="muted">Datei: <code>summary_history.jsonl</code></span>
+    </div>
+    <canvas id="chart" width="1000" height="220"></canvas>
+    <pre id="historyList" class="muted" style="max-height:220px;overflow:auto;margin-top:10px;background:#0a1017;padding:10px;border-radius:10px;border:1px solid var(--border)"></pre>
+    <div class="muted" style="margin-top:10px">
+      Falls der Browser lokale Datei-Fetches blockiert, kannst du die History hier manuell laden:
+      <input type="file" id="fileInput" accept=".json,.jsonl" />
+    </div>
+  </section>
+
+  <section class="card" style="grid-column:1/-1">
+    <h2>Kurzanleitung</h2>
+    <ol>
+      <li><b>Einmalig einsammeln & verlinken:</b> <code>central-test-run.command</code> klicken oder im Terminal <code>./setup_central_models.sh --setup --full-scan --verbose</code></li>
+      <li><b>Zeitplan installieren:</b> <code>central-cron.command --install 12h</code> (6h/12h/24h)</li>
+      <li><b>Status prüfen:</b> <code>central-cron.command --status</code></li>
+      <li><b>History zurücksetzen:</b> Button oben (löscht nur JSONs)</li>
+    </ol>
+  </section>
+</main>
+
+<footer>© El-Nala • lokal lauffähig • responsiv</footer>
+
+<script>
+(function(){
+  const byId = (x)=>document.getElementById(x);
+
+  // 1) Buttons je nach Datei-Anwesenheit
+  const actions = byId('actions');
+  const files = ['central-test-run.command','central-cron.command','central-reset-history.command'];
+  const makeBtn = (href, label, cls='')=>{
+    const a = document.createElement('a');
+    a.className = 'btn '+cls;
+    a.textContent = label;
+    a.href = href; // Klick öffnet Terminal bei .command
+    return a;
+  };
+  // Wir können lokale Dateien nicht „prüfen“ wie auf einem Server.
+  // Heuristik: Wir zeigen Buttons immer an, und daneben einen Info-Hinweis.
+  actions.innerHTML = '';
+  actions.append(
+    makeBtn('central-test-run.command','Jetzt scannen (Testlauf)','btn-accent'),
+    makeBtn('central-cron.command?runnow','Sofortlauf (Cron-Script)'),
+    makeBtn('central-cron.command?install12h','Zeitplan installieren (12 h)','btn-primary'),
+    makeBtn('central-cron.command?status','Zeitplan-Status'),
+    makeBtn('central-cron.command?uninstall','Zeitplan entfernen'),
+    makeBtn('central-reset-history.command','Verlauf zurücksetzen','btn-danger')
+  );
+  const info = document.createElement('div');
+  info.className='muted';
+  info.style.marginTop='8px';
+  info.textContent = 'Wenn beim Klick ein Download startet statt Ausführung: .command im Finder doppelklicken oder mit Rechtsklick → Öffnen.';
+  actions.append(info);
+
+  // 2) Letzte Zusammenfassung laden
+  async function loadSummary(){
+    const box = byId('summaryBox');
+    try{
+      const r = await fetch('last_summary.json',{cache:'no-store'});
+      if (!r.ok) throw new Error('not ok');
+      const j = await r.json();
+      box.innerHTML = `
+        <div>
+          <b>${j.timestamp || '—'}</b>
+          <div style="margin-top:6px">
+            Gefunden: <b class="ok">${j.found}</b> • Neu: <b>${j.moved}</b> • Dedupl.: <b>${j.deduped}</b> • Symlinks: <b>${j.symlinks}</b><br/>
+            Übersprungen (in Benutzung): <b class="warn">${j.skipped_inuse}</b> • Sonst: <b>${j.skipped_other}</b><br/>
+            Zentral: <code>${j.central || '—'}</code>
+          </div>
+        </div>`;
+    }catch(e){
+      box.innerHTML = `Keine <code>last_summary.json</code> gefunden. Starte einen Lauf über „Jetzt scannen“.`;
+    }
+  }
+
+  // 3) History laden + Mini-Chart zeichnen
+  const chart = byId('chart');
+  const ctx = chart.getContext('2d');
+
+  function drawChart(points, label){
+    // clear
+    ctx.clearRect(0,0,chart.width,chart.height);
+    // axes
+    ctx.strokeStyle = '#1c2430';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(40,10); ctx.lineTo(40,chart.height-30); ctx.lineTo(chart.width-10,chart.height-30);
+    ctx.stroke();
+    if (!points.length) return;
+    const xs = points.map((p,i)=>i);
+    const ys = points.map(p=>p.value);
+    const min = Math.min(...ys), max = Math.max(...ys);
+    const padTop=16, padBottom=36, padLeft=44, padRight=12;
+    const W = chart.width-padLeft-padRight, H = chart.height-padTop-padBottom;
+    const scaleX = W / Math.max(1,(points.length-1));
+    const scaleY = H / Math.max(1,(max-min));
+    // grid
+    ctx.strokeStyle = '#14202b';
+    ctx.lineWidth = 1;
+    const steps = 4;
+    for(let i=0;i<=steps;i++){
+      const y = padTop + i*(H/steps);
+      ctx.beginPath(); ctx.moveTo(padLeft,y); ctx.lineTo(padLeft+W,y); ctx.stroke();
+    }
+    // line
+    ctx.strokeStyle = '#6ee7ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    points.forEach((p,i)=>{
+      const x = padLeft + i*scaleX;
+      const y = padTop + (max===min? H/2 : (H - (p.value-min)*scaleY));
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    // label
+    ctx.fillStyle = '#9fb3c8';
+    ctx.fillText(label, padLeft, padTop-4);
+  }
+
+  async function loadHistory(){
+    const box = byId('historyList');
+    try{
+      const r = await fetch('summary_history.jsonl',{cache:'no-store'});
+      if (!r.ok) throw new Error('not ok');
+      const text = await r.text();
+      const lines = text.trim().split(/\n+/).filter(Boolean);
+      const items = lines.map(l=>{ try{return JSON.parse(l);}catch{ return null; } }).filter(Boolean);
+      // Liste
+      box.textContent = lines.slice(-50).join('\n');
+      // Chart (wir nehmen "found" als Kennzahl)
+      const pts = items.slice(-50).map(x=>({value:(+x.found)||0}));
+      drawChart(pts,"Gefunden (letzte Läufe)");
+    }catch(e){
+      box.textContent = 'Keine summary_history.jsonl gefunden. (Wird nach Läufen befüllt.)';
+      drawChart([],'');
+    }
+  }
+
+  // Fallback: manuelles Laden
+  byId('fileInput').addEventListener('change', (ev)=>{
+    const f = ev.target.files?.[0]; if(!f) return;
+    const fr = new FileReader();
+    fr.onload = ()=>{ 
+      const text = String(fr.result||'');
+      const lines = text.trim().split(/\n+/).filter(Boolean);
+      const items = lines.map(l=>{ try{return JSON.parse(l);}catch{ return null; } }).filter(Boolean);
+      byId('historyList').textContent = lines.slice(-50).join('\n');
+      const pts = items.slice(-50).map(x=>({value:(+x.found)||0}));
+      drawChart(pts,"Gefunden (importiert)");
+    };
+    fr.readAsText(f);
+  });
+
+  byId('btnReload').addEventListener('click', ()=>{ loadSummary(); loadHistory(); });
+
+  // initial
+  loadSummary(); loadHistory();
+})();
+</script>
+</body>
+</html>
