@@ -22,4 +22,14 @@ All additional standalone scripts (e.g., ComfyUI installers) provided in this re
 
 ---
 
+## Ecosystem & Alternatives
+
+While **NALA-mESh(rOOm)** focuses on optimizing AliceVision/Meshroom for macOS and directly bridging it with **ComfyUI** (providing necessary installation scripts and custom nodes), there are other tools in the open-source photogrammetry space:
+
+- **[MicMac (micmacIGN/micmac)](https://github.com/micmacIGN/micmac):** Developed by the French National Geographic Institute (IGN). MicMac is a highly academic, CLI-driven photogrammetry suite known for precise tie-point extraction and aerial mapping. While it has a steeper learning curve than Meshroom's node-based GUI, it serves as a powerful alternative for GIS and specialized datasets.
+
+*This project is designed to fill the specific gap of making Meshroom easily accessible as a node within the ComfyUI ecosystem on Apple Silicon, as native implementations are scarce.*
+
+---
+
 *This project is not officially endorsed by or affiliated with the AliceVision Association.*

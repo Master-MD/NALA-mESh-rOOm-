@@ -191,11 +191,12 @@ class MeshroomRun:
             "output_dir": ("STRING", {"default": ""}),
             "pre_upscale": ("INT", {"default": 0, "min":0, "max":4}),
             "open_app": ("BOOLEAN", {"default": True}),
+            "headless_mode": ("BOOLEAN", {"default": False}),
         }}
     RETURN_TYPES = ("STRING",)
     FUNCTION = "run"
     CATEGORY = "Meshroom"
-    def run(self, photos_dir, output_dir, pre_upscale, open_app):
+    def run(self, photos_dir, output_dir, pre_upscale, open_app, headless_mode):
         app = Path(os.path.expanduser("~/Applications")) / "Meshroom PRO KI.app"
         res = app / "Contents/Resources"
         realesr = app / "Contents/MacOS" / "realesrgan-upscale"
@@ -203,7 +204,15 @@ class MeshroomRun:
             out_pre = Path(output_dir)/"upscaled"; out_pre.mkdir(parents=True, exist_ok=True)
             subprocess.check_call([str(realesr), "-i", photos_dir, "-o", str(out_pre), "-s", str(pre_upscale), "-n", "realesrgan-x4plus"])
             photos_dir=str(out_pre)
-        if open_app and app.exists():
+        
+        if headless_mode and app.exists():
+            batch = app / "Contents/MacOS/meshroom_batch"
+            if batch.exists():
+                subprocess.Popen([str(batch), "--input", photos_dir, "--output", output_dir])
+                return (f"Background Headless Mode started.\\nPhotos: {photos_dir}\\nOutput: {output_dir}",)
+            else:
+                return ("Error: meshroom_batch not found for headless mode",)
+        elif open_app and app.exists():
             subprocess.Popen(["open", str(app)])
         return (f"Use photos from: {photos_dir}\\nOutput to: {output_dir}",)
 NODE_CLASS_MAPPINGS={"MeshroomRun":MeshroomRun}
