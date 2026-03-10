@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NALA-mESh(rOOm) | Workflow DB</title>
+    <!-- Tailwind CSS (via CDN for standalone functionality) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            background-image: radial-gradient(circle at top right, #1e293b 0%, transparent 40%), 
+                              radial-gradient(circle at bottom left, #064e3b 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .accent-glow {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); /* Emerald 500 */
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-8">
+
+    <!-- Header -->
+    <header class="mb-12 text-center">
+        <h1 class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-500 mb-4 tracking-tight">
+            NALA-mESh(rOOm) Ultimate
+        </h1>
+        <h2 class="text-2xl font-light text-slate-300">Workflow Ideas Database</h2>
+        <p class="mt-4 text-slate-400 max-w-2xl mx-auto">
+            Auto-generate pre-configured ComfyUI Photogrammetry graphs. Download the JSON files and drag-and-drop them directly into your ComfyUI workspace.
+        </p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        <!-- Card 1: Insta360 to Apple Native -->
+        <article class="glass-panel rounded-2xl p-6 flex flex-col items-start card-hover">
+            <div class="bg-indigo-900 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full mb-4 inline-block uppercase tracking-wide">
+                Video to 3D
+            </div>
+            <h3 class="text-2xl font-semibold mb-2 text-white">Insta360 to Apple Native</h3>
+            <p class="text-slate-400 mb-6 flex-grow text-sm">
+                Automatically extracts optimized frames from an Insta360 video and feeds them into the blazing-fast native Apple Silicon M4 Object Capture rendering engine.
+            </p>
+            <div class="w-full flex justify-between items-center mt-auto border-t border-slate-700 pt-4">
+                <span class="text-xs text-slate-500 font-mono">Insta360_to_AppleNative.json</span>
+                <a href="workflows_templates/Insta360_to_AppleNative.json" download class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors accent-glow text-sm flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Download
+                </a>
+            </div>
+        </article>
+
+        <!-- Card 2: Gaussian Splatting Generator -->
+        <article class="glass-panel rounded-2xl p-6 flex flex-col items-start card-hover">
+            <div class="bg-fuchsia-900 text-fuchsia-300 text-xs font-bold px-3 py-1 rounded-full mb-4 inline-block uppercase tracking-wide">
+                Next-Gen 3D
+            </div>
+            <h3 class="text-2xl font-semibold mb-2 text-white">Gaussian Splat Maker</h3>
+            <p class="text-slate-400 mb-6 flex-grow text-sm">
+                Bypasses traditional meshing. Uses Meshroom Headless for alignment, then generates a photorealistic 3D Gaussian Splat (.ply) for WebGL viewers.
+            </p>
+            <div class="w-full flex justify-between items-center mt-auto border-t border-slate-700 pt-4">
+                <span class="text-xs text-slate-500 font-mono">GaussianSplat_Generator.json</span>
+                <a href="workflows_templates/GaussianSplat_Generator.json" download class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors accent-glow text-sm flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Download
+                </a>
+            </div>
+        </article>
+
+        <!-- Card 3: BambuLab 3D Print Ready (Coming Soon Placeholder) -->
+        <article class="glass-panel rounded-2xl p-6 flex flex-col items-start card-hover opacity-70">
+            <div class="bg-orange-900 text-orange-300 text-xs font-bold px-3 py-1 rounded-full mb-4 inline-block uppercase tracking-wide">
+                3D Printing
+            </div>
+            <h3 class="text-2xl font-semibold mb-2 text-white">BambuLab Solidifier</h3>
+            <p class="text-slate-400 mb-6 flex-grow text-sm">
+                Takes a raw scan, auto-fills non-manifold holes, flattens the base, and exports as a slicer-ready .3mf file for your BambuLab A1.
+            </p>
+            <div class="w-full flex justify-between items-center mt-auto border-t border-slate-700 pt-4">
+                <span class="text-xs text-emerald-400 font-semibold italic">In Development (Utonia AI Integration)</span>
+            </div>
+        </article>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-20 text-center text-slate-500 text-sm border-t border-slate-800 pt-8 pb-4 max-w-4xl mx-auto">
+        <p>&copy; 2026 NALA-mESh(rOOm) Ultimate Ecosystem. All rights reserved.</p>
+        <p class="mt-2 text-xs">Built with ❤️ for Apple Silicon & ComfyUI.</p>
+    </footer>
+
+</body>
+</html>

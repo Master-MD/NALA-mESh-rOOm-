@@ -1,0 +1,44 @@
+{
+  "last_node_id": 6,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "LoadImageDir",
+      "pos": [100, 100],
+      "size": [200, 200],
+      "properties": {"dir": "input_images"}
+    },
+    {
+      "id": 4,
+      "type": "MeshroomRun",
+      "pos": [400, 100],
+      "size": [300, 300],
+      "inputs": [
+        {"name": "photos_dir", "type": "STRING", "link": 1}
+      ],
+      "properties": {
+        "engine_mode": "Local Meshroom",
+        "headless_mode": true
+      }
+    },
+    {
+      "id": 6,
+      "type": "GaussianSplatRender",
+      "pos": [800, 100],
+      "size": [300, 300],
+      "inputs": [
+        {"name": "meshroom_data", "type": "STRING", "link": 2}
+      ],
+      "properties": {
+        "output_format": ".ply"
+      }
+    }
+  ],
+  "links": [
+    [1, 2, 0, 4, 0, "STRING"],
+    [2, 4, 0, 6, 0, "STRING"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {}
+}
