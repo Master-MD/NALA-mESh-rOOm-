@@ -10,6 +10,8 @@
     <string>com.nala.3dstudio</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleName</key>
     <string>NALA 3D Studio</string>
     <key>CFBundlePackageType</key>

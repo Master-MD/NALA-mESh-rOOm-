@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="assets/nala_meshroom_icon.jpg" width="250" style="border-radius: 20px; box-shadow: 0 0 20px rgba(0,255,128,0.5);">
   <h1>NALA-mESh(rOOm) Ultimate</h1>
   <h3>Hybrid Local/Remote Photogrammetry for ComfyUI macOS</h3>
 </div>
@@ -7,13 +8,15 @@
 
 ---
 
-## Architecture: The Best of Both Worlds
-Instead of forcefully rewriting the entire legacy C++ Meshroom environment (CUDA/AliceVision), this project leverages the most optimal rendering engine for the hardware. 
+## Architecture & Ecosystem Integration
+This project strictly adheres to the **NALA Ecosystem Universal Onboarding Protocol** (Zero-Redundancy & Hub-and-Spoke). The system provides multiple ways to interact with the photogrammetry logic:
 
-The custom `MeshroomRun` ComfyUI Node now routes to one of three engines:
-1. 🍏 **Apple Native Engine (RealityKit / Metal):** A pure Swift command-line engine utilizing Apple's native **Object Capture API**. Highly optimized for Apple Silicon GPUs (M4 Max & Neural Engine), rendering 3D models fully locally in seconds without any Meshroom overhead.
-2. 💻 **Local Meshroom (CPU Fallback/AliceVision):** Triggers the classic Meshroom CLI processing directly on your Mac, including a new `Headless Mode` for background invisible rendering.
-3. ⚡️ **Remote Meshroom (NVIDIA Worker):** Automatically triggers via SSH and network a remote node (e.g., Ubuntu/Windows PC with massive NVIDIA GPUs) to crunch complex datasets using traditional AliceVision node graphs.
+1. 🍏 **NALA 3D Studio (Native macOS SwiftUI App):** A standalone macOS `.dmg` wrapper around our highly-optimized Swift Apple Metal pipeline. No ComfyUI required! Provides real-time rendering feedback directly on your Desktop.
+2. 🔄 **ComfyUI Bridge Nodes:** The custom `MeshroomRun` ComfyUI Node routes to three engines:
+   - **Apple Native Engine:** Runs the pure Swift CLI (`meshroom_mac_native`).
+   - **Local Meshroom:** CPU Fallback via AliceVision.
+   - **Remote Meshroom (SSH Worker):** Discovers and uses your heavy Dell T5810 Workstation / NVIDIA Nodes.
+3. 💡 **NALA Workflow Ideas DB:** A beautiful HTML dashboard (`nala_workflow_db.html`) acting as an intelligent prompt database for automatic ComfyUI workflow generation (Insta360 Video integration, Gaussian Splatting, etc.).
 
 ![Architecture](/Users/ultramacuser/.gemini/antigravity/brain/6036eefd-15f2-4490-afad-7102be196453/nala_meshroom_hybrid_architecture_1773148742262.png)
 
@@ -37,13 +40,15 @@ Simply run the installer on your macOS device:
 
 **NALA-mESh(rOOm)** ist eine hochentwickelte, hybride Photogrammetrie-Pipeline, die speziell für Apple Silicon (M1/M2/M3/M4) Geräte maßgeschneidert wurde. Ursprünglich als Anpassung für [AliceVision Meshroom](https://github.com/alicevision/Meshroom) gedacht, führt dieses Projekt die **Ultimate Hybrid** Logik ein: Es schließt die Lücke zwischen rasend schnellem nativen macOS-Computing und leistungsstarkem verteiltem NVIDIA-Rendering – alles zugänglich über einen eigens entwickelten [ComfyUI](https://github.com/comfyanonymous/ComfyUI) Bridge-Node.
 
-## Architektur: Das Beste aus beiden Welten
-Anstatt die riesige, veraltete C++ Meshroom-Umgebung (CUDA/AliceVision) krampfhaft für Apple neu zu schreiben, nutzt dieses Projekt die jeweils optimalste Render-Engine für die vorhandene Hardware.
+## Architektur & Ökosystem
+Dieses Projekt folgt streng dem **NALA Ecosystem Universal Onboarding Protocol** (Zero-Redundancy & Hub-and-Spoke). Das System bietet unterschiedliche Zugänge zur Photogrammetrie:
 
-Der Custom `MeshroomRun` ComfyUI Node steuert nun eine von drei Engines an:
-1. 🍏 **Apple Native Engine (RealityKit / Metal):** Eine reine Swift-Kommandozeilen-Engine, die Apples native **Object Capture API** nutzt. Extrem optimiert für Apple Silicon GPUs (z.B. den M4 Max). Berechnet 3D-Modelle in Sekundenbruchteilen vollständig lokal – komplett ohne den riesigen Meshroom-Overhead.
-2. 💻 **Local Meshroom (CPU Fallback/AliceVision):** Startet das klassische Meshroom direkt auf deinem Mac inkl. eines neuen `Headless Mode` für unsichtbares Rendering im Hintergrund.
-3. ⚡️ **Remote Meshroom (NVIDIA Worker):** Löst vollautomatisch via SSH und Netzwerk einen entfernten Rechner aus (z.B. Ubuntu/Windows-PC mit schweren NVIDIA-Karten), um hochkomplexe Datensätze auf den dortigen AliceVision-Node-Graphen berechnen zu lassen.
+1. 🍏 **NALA 3D Studio (Native macOS SwiftUI App):** Eine eigenständige macOS `.dmg` App, die direkt auf die Apple Metal Pipeline zugreift. Gar kein ComfyUI nötig! Bietet eine GUI mit Echtzeit-Fortschrittsbalken.
+2. 🔄 **ComfyUI Bridge Nodes:** Der Custom `MeshroomRun` Node steuert eine von drei Engines an:
+   - **Apple Native Engine:** Nutzt Apples riesige native Leistung (M4 Max) ohne Meshroom-Overhead.
+   - **Local Meshroom:** Startet klassisches AliceVision Meshroom ("Headless").
+   - **Remote Meshroom (NVIDIA Worker):** Nutzt fette NVIDIA GPUs (Bsp. Dell T5810) im lokalen Netz via SSH.
+3. 💡 **NALA Workflow Ideas DB:** Ein schickes HTML-Dashboard (`nala_workflow_db.html`), mit dem sich fertige ComfyUI Workflows für komplexe Aufgaben (Insta360, Gaussian Splatting) direkt auf den Mac herunterladen lassen.
 
 ## Installation
 Führe einfach den Installer auf deinem macOS-Gerät aus:

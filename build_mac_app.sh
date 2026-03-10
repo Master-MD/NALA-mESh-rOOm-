@@ -26,6 +26,26 @@ swiftc -parse-as-library src_app/main.swift -o "$MACOS_DIR/$APP_NAME" -framework
 # 4. Strip binary to save space
 strip "$MACOS_DIR/$APP_NAME"
 
+# 4.5 Generate App Icon (if available)
+ICON_SRC="assets/nala_meshroom_icon.jpg"
+if [[ -f "$ICON_SRC" ]]; then
+    echo "Synthesizing AppIcon.icns from $ICON_SRC..."
+    mkdir -p build/MyIcon.iconset
+    sips -s format png "$ICON_SRC" --out build/icon_master.png > /dev/null
+    sips -z 16 16     build/icon_master.png --out build/MyIcon.iconset/icon_16x16.png > /dev/null
+    sips -z 32 32     build/icon_master.png --out build/MyIcon.iconset/icon_16x16@2x.png > /dev/null
+    sips -z 32 32     build/icon_master.png --out build/MyIcon.iconset/icon_32x32.png > /dev/null
+    sips -z 64 64     build/icon_master.png --out build/MyIcon.iconset/icon_32x32@2x.png > /dev/null
+    sips -z 128 128   build/icon_master.png --out build/MyIcon.iconset/icon_128x128.png > /dev/null
+    sips -z 256 256   build/icon_master.png --out build/MyIcon.iconset/icon_128x128@2x.png > /dev/null
+    sips -z 256 256   build/icon_master.png --out build/MyIcon.iconset/icon_256x256.png > /dev/null
+    sips -z 512 512   build/icon_master.png --out build/MyIcon.iconset/icon_256x256@2x.png > /dev/null
+    sips -z 512 512   build/icon_master.png --out build/MyIcon.iconset/icon_512x512.png > /dev/null
+    sips -z 1024 1024 build/icon_master.png --out build/MyIcon.iconset/icon_512x512@2x.png > /dev/null
+    iconutil -c icns build/MyIcon.iconset -o "$RESOURCES_DIR/AppIcon.icns"
+    rm -R build/MyIcon.iconset build/icon_master.png
+fi
+
 echo "App Bundle created at $APP_BUNDLE"
 
 # 5. Create DMG (Optional, but requested)
